@@ -56,7 +56,7 @@ export const validateController = async(req, res) => {
     
         if (region === "Madhya Pradesh") {
           // Use upsert to avoid duplicate key errors
-          const savedIP = await prisma.allowedIP.upsert({
+          const savedIP = await Prisma.allowedIP.upsert({
             where: { ip: ip },
             update: {},
             create: { ip: ip, label: "Madhya Pradesh User" }
@@ -69,7 +69,7 @@ export const validateController = async(req, res) => {
           });
         } else {
           // Use upsert to avoid duplicate key errors
-          const newBlockedIp = await prisma.blockedIP.upsert({
+          const newBlockedIp = await Prisma.blockedIP.upsert({
             where: { ip: ip },
             update: { reason: `Access blocked from ${region}, ${country}` },
             create: {
