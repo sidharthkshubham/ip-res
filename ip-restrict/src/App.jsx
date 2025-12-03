@@ -7,6 +7,8 @@ function App() {
     message: "",
     loading: true,
   });
+  const [userIp, setUserIp] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -14,6 +16,7 @@ function App() {
         const ipResponse = await fetch("https://api.ipify.org?format=json");
         const ipData = await ipResponse.json();
         const userIp = ipData.ip;
+        setUserIp(userIp);
 
         const validateResponse = await fetch(
           `http://localhost:3000/api/v1/validate?ip=${userIp}`
@@ -36,6 +39,28 @@ function App() {
 
     checkAccess();
   }, []);
+
+  const handleBanUnban = async (action) => {
+    setActionLoading(true);
+    try {
+      const endpoint = action === 'ban' 
+        ? `https://api.ip-res.nextping.blog/api/v1/b/ban?ip=${userIp}`
+        : `https://api.ip-res.nextping.blog/api/v1/b/unban?ip=${userIp}`;
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json();
+      
+      window.location.reload();
+    } catch (error) {
+      alert("Error processing request. Please try again.");
+      setActionLoading(false);
+    }
+  };
 
   if (status.loading) {
     return (
@@ -78,6 +103,30 @@ function App() {
 
           <div className="mt-8 p-5 bg-white/90 rounded-lg text-gray-800">
             <p className="text-base">{status.message}</p>
+          </div>
+
+          <div className="mt-6">
+            {status.message.includes("blocked") || status.message.includes("banned") ? (
+              <button
+                onClick={() => handleBanUnban('unban')}
+                disabled={actionLoading}
+                className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {actionLoading ? "Processing..." : "Unban This IP"}
+              </button>
+            ) : (
+              <button
+                onClick={() => handleBanUnban('ban')}
+                disabled={actionLoading}
+                className="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {actionLoading ? "Processing..." : "Ban This IP"}
+              </button>
+            )}
+          </div>
+
+          <div className="mt-4 text-white/80 text-sm">
+            Your IP: {userIp}
           </div>
         </div>
       </div>

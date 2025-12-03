@@ -16,14 +16,6 @@ export const validateController = async(req, res) => {
     
         const location = await getGeoData(ip);
         
-        // Handle geolocation API failure
-        if (!location || location.status === 'fail') {
-          return res.status(500).json({
-            allowed: false,
-            message: "Unable to determine location for this IP"
-          });
-        }
-        
         const region = location.regionName;
         const country = location.country;
     
@@ -45,6 +37,7 @@ export const validateController = async(req, res) => {
         const blockedIp = await Prisma.blockedIP.findUnique({
           where: { ip: ip }
         });
+        console.log("blockedIp :", blockedIp);
         
         if (blockedIp) {
           return res.json({
@@ -55,7 +48,7 @@ export const validateController = async(req, res) => {
         }
     
         if (region === "Madhya Pradesh") {
-          // Use upsert to avoid duplicate key errors
+          
           const savedIP = await Prisma.allowedIP.upsert({
             where: { ip: ip },
             update: {},
@@ -68,16 +61,6 @@ export const validateController = async(req, res) => {
             data: savedIP
           });
         } else {
-          // Use upsert to avoid duplicate key errors
-          const newBlockedIp = await Prisma.blockedIP.upsert({
-            where: { ip: ip },
-            update: { reason: `Access blocked from ${region}, ${country}` },
-            create: {
-              ip: ip,
-              reason: `Access blocked from ${region}, ${country}`
-            }
-          });
-          
           return res.json({
             allowed: false,
             message: `We are currently unavailable in ${region}. Currently we are only active in Madhya Pradesh`,

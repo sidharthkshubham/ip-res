@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import validateRouter from "./routes/validate.js";
+import banunbanRouter from "./routes/banunban.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,7 +21,7 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api/v1", validateRouter);
-
+app.use("/api/v1/b", banunbanRouter);
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
